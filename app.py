@@ -1,9 +1,8 @@
 # app.py
 from flask import Flask, request, session, redirect, url_for, render_template, flash
-import psycopg2  # pip install psycopg2
+import psycopg2
 import psycopg2.extras
 import re
-from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 
 app = Flask(__name__)
