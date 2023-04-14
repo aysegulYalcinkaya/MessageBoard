@@ -1,5 +1,7 @@
 # app.py
 from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
 import psycopg2
 import psycopg2.extras
 import re
@@ -8,12 +10,19 @@ import pandas as pd
 app = Flask(__name__)
 app.secret_key = 'aidi_extra'
 
-DB_HOST = "localhost"
-DB_NAME = "message_board"
-DB_USER = "postgres"
-DB_PASS = "asli2809"
+# DB_HOST = "localhost"
+# DB_NAME = "message_board"
+# DB_USER = "postgres"
+# DB_PASS = "asli2809"
 
-conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port='5432')
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'message_board'
+
+conn = MySQL(app)
+
+#conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port='5432')
 
 my_dic = pd.read_excel('chyper-code.xlsx', index_col=0, usecols="A:B", engine="openpyxl").to_dict()
 pwd_map = my_dic['SYSTEM CONVERT']
@@ -54,7 +63,8 @@ def home():
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    #cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = conn.connection.cursor(MySQLdb.cursors.DictCursor)
 
     # Check if "email" and "password" POST requests exist (user submitted form)
     if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
@@ -90,8 +100,8 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
+    #cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = conn.connection.cursor()
     # Check if "password", "password2" and "email" POST requests exist (user submitted form)
     if request.method == 'POST' and 'password' in request.form and 'password2' in request.form and 'email' in request.form:
         # Create variables for easy access
@@ -118,7 +128,8 @@ def register():
             # Account doesnt exists and the form data is valid, now insert new account into users table
             cursor.execute("INSERT INTO tb_user (email, password) VALUES (%s,%s)",
                            (email, encrypted_password))
-            conn.commit()
+            #conn.commit()
+            conn.connection.commit()
             flash('You have successfully registered!')
     elif request.method == 'POST':
         # Form is empty... (no POST data)
@@ -139,8 +150,8 @@ def logout():
 
 @app.route('/message',methods=['GET', 'POST'])
 def message():
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
+    #cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = conn.connection.cursor()
     if 'loggedin' in session and 'id' in session:
         if request.method == 'POST' and 'msg_text' in request.form:
             # Create variables for easy access
@@ -156,7 +167,8 @@ def message():
                 # insert message into tb_mail table
                 cursor.execute("INSERT INTO tb_mail (user_id, mail_content) VALUES (%s,%s)",
                                (user_id, mail_content))
-                conn.commit()
+                #conn.commit()
+                conn.connection.commit()
                 flash('Hi ' + session['email'] + ', Message sent!')
             else:
                 return render_template('login.html')
