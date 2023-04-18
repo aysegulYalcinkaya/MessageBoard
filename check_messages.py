@@ -28,7 +28,7 @@ while True:
             mycursor = mydb.cursor()
             mycursor.execute('SELECT * FROM tb_mail where id=%s',(id,))
             mail=mycursor.fetchone()
-            mycursor.execute("DELETE FROM trigger_table")
+            mycursor.execute("DELETE FROM trigger_table where new_mail=%s",(id,))
             message_text=mail[2]
             mydb.close()
             integers = vectorizer.transform([message_text])

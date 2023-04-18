@@ -140,7 +140,7 @@ def logout():
 
 @app.route('/message', methods=['GET', 'POST'])
 def message():
-   cursor = conn.connection.cursor()
+    cursor = conn.connection.cursor()
     if 'loggedin' in session and 'id' in session:
         if request.method == 'POST' and 'msg_text' in request.form:
             # Create variables for easy access
